@@ -28,11 +28,9 @@ class Racer:
 		self.ri.scale[:] = 0.5, 0.5, 0.5
 		self.ri.position[:] = WORLD_WIDTH / 2.0, 0.0, WORLD_HEIGHT / 2.0
 		# update his rotation and direction
-		rot = self.ri.rotation.copy()
-		rad = math.radians(rot.y)
+		rad = math.radians(self.ri.rotation.y)
 		self.dir = Vector3(math.cos(rad), 0.0, math.sin(rad))
 		self.nextCPPos = Vector3()
-		self.desiredDir = Vector3()
 		self.up = True  # used in making the boat bob slight
 		self.finished = False  # whether or not we are done with the race
 		self.speed = 0 # ship's current speed
@@ -45,8 +43,7 @@ class Racer:
 
 	# Keeps the racer inside the seascape
 	def boundsCheck(self):
-		# check the player against each part fo the world,
-		# slow him down if he hit
+		# check the player against each part fo the world, slow him down if he hit
 		pos = self.ri.position.copy()
 		if pos.x > WORLD_WIDTH:
 			pos.x = WORLD_WIDTH
@@ -75,7 +72,6 @@ class Racer:
 	def rotate(self, r):
 		self.hasRotated = True
 		# this makes sure the rotation doesn't exceed 360 degrees
-		# the 23527424 is 360 in fixed point (hehe, micro optimization)
 		if self.ri.rotation.y + r > 360.0 or self.ri.rotation.y + r < -360.0:
 			self.ri.rotation.y = 0
 		self.ri.rotation.y += r
@@ -116,22 +112,20 @@ class Racer:
 		else:
 			self.increaseSpeed(0.025)		
 			# build a normalized direction vector
-			self.desiredDir = self.ri.position - self.nextCPPos
-			self.desiredDir.y = 0.0
-			mag = math.sqrt(self.desiredDir.x * self.desiredDir.x + self.desiredDir.z * self.desiredDir.z)
+			desiredDir = self.ri.position - self.nextCPPos
+			desiredDir.y = 0.0
+			mag = math.sqrt(desiredDir.x * desiredDir.x + desiredDir.z * desiredDir.z)
 			n = 1.0 / mag
-			self.desiredDir.x *= n
-			self.desiredDir.z *= n
-			# make the boat rotate the same as the player
-			playerRot = player.ri.rotation.copy()
-			playerRot.y + 5.0 + random.uniform(0.0, 0.5)
-			self.ri.rotation[:] = playerRot
+			desiredDir.x *= n
+			desiredDir.z *= n
 			# slow the AI down a little
 			randFac = (8.0 + random.uniform(0.0, 0.00005)) / 10.0
-			finalX = -self.desiredDir.x * self.speed
-			finalX *= randFac
-			finalZ = -self.desiredDir.z * self.speed
-			finalZ *= randFac
+			finalX = -desiredDir.x * self.speed * randFac
+			finalZ = -desiredDir.z * self.speed * randFac
+			# make the boat "look" forward!!
+			if finalZ < 0: k = 90.0
+			else: k = -90.0
+			self.ri.rotation.y = math.degrees(math.atan(finalX / finalZ)) + k
 			# move the boat		
 			self.ri.translate((finalX, 0.0, finalZ))
 		# keep him in the water
@@ -143,11 +137,10 @@ class Racer:
 		# keep it the spray trail right with the boat
 		self.spray.move(self.ri.position)
 		# also keep it spraying in the right direction
-		newDir = self.dir.copy()
 		if self.speed > 0:
-			newDir[:] = newDir.x, 0.1, -newDir.z
+			newDir = Vector3(self.dir.x, 0.1, -self.dir.z)
 		else:
-			newDir[:] = 0.0, 0.0, 0.0
+			newDir = Vector3(0.0, 0.0, 0.0)
 		self.spray.redirect(newDir)
 		self.spray.update()
 
@@ -247,15 +240,9 @@ class RaceCourse:
 
 
 class Seascape:
-	def __init__(self):
-		self.sea = None  # the water quad (RenderInstance)
-		self.models = None  # the islands (RenderInstance)
+	def __init__(self, mm):
 		# used in water animation
 		self.texTranslate = 0
-		self.waterMoved = False
-
-	# sets everything up
-	def generate(self, mm):
 		self.waterMoved = True
 		self.models = [renderer.RenderInstance(mm.getRandomSeascapeModel()) for i in xrange(15)]
 		for model in self.models:

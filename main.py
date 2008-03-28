@@ -11,25 +11,26 @@ if __name__ == '__main__':
 
 	win = pyglet.window.Window(320, 240, caption="Wake Breaker", resizable=True)
 
+	key_map = {
+		key.LEFT:   game.G_LEFT,
+		key.UP:     game.G_UP,
+		key.RIGHT:  game.G_RIGHT,
+		key.DOWN:   game.G_DOWN,
+		key.RETURN: game.G_OK,
+		key.NUM_1:  game.G_DEVICE1,
+		key.NUM_2:  game.G_DEVICE2}
+
 	@win.event
 	def on_key_press(symbol, modifiers):
-		if symbol == key.LEFT:   g.keyDown(game.G_LEFT)
-		if symbol == key.UP:     g.keyDown(game.G_UP)
-		if symbol == key.RIGHT:  g.keyDown(game.G_RIGHT)
-		if symbol == key.DOWN:   g.keyDown(game.G_DOWN)
-		if symbol == key.RETURN: g.keyDown(game.G_OK)
-		if symbol == key.NUM_1:  g.keyDown(game.G_DEVICE1)
-		if symbol == key.NUM_2:  g.keyDown(game.G_DEVICE2)
+		if key_map.has_key(symbol):
+			g.keysDown[key_map[symbol]] = True
+			return pyglet.event.EVENT_HANDLED
 
 	@win.event
 	def on_key_release(symbol, modifiers):
-		if symbol == key.LEFT:   g.keyUp(game.G_LEFT)
-		if symbol == key.UP:     g.keyUp(game.G_UP)
-		if symbol == key.RIGHT:  g.keyUp(game.G_RIGHT)
-		if symbol == key.DOWN:   g.keyUp(game.G_DOWN)
-		if symbol == key.RETURN: g.keyUp(game.G_OK)
-		if symbol == key.NUM_1:  g.keyUp(game.G_DEVICE1)
-		if symbol == key.NUM_2:  g.keyUp(game.G_DEVICE2)
+		if key_map.has_key(symbol):
+			g.keysDown[key_map[symbol]] = False
+			return pyglet.event.EVENT_HANDLED
 
 	@win.event
 	def on_resize(width, height):
@@ -45,7 +46,6 @@ if __name__ == '__main__':
 		return pyglet.event.EVENT_HANDLED
 
 	g = game.Game()
-	g.create()
 
 	pyglet.clock.set_fps_limit(30)
 	while not win.has_exit:
