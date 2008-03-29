@@ -41,16 +41,20 @@ class ParticleSystem:
 		particle.velocity.z = random.uniform(0.0, 0.33) * self.__dir.z
 
 	def render(self):
-		glPushMatrix()
-		# Turn of texturing, it would be too expensive
+		glPushAttrib(GL_ENABLE_BIT|GL_POINT_BIT)
+		glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT)
+
 		glDisable(GL_TEXTURE_2D)
+		glEnableClientState(GL_VERTEX_ARRAY)
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY) #FIXME
 		# Attenuate the particle size based on distance
 		glPointSize(8.0)
 		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, (GLfloat*3)(0.0, 0.05, 0.005))
 		glVertexPointer(3, GL_FLOAT, ctypes.sizeof(Particle), self.__particles_ptr)
 		glDrawArrays(GL_POINTS, 0, len(self.__particles))
-		glEnable(GL_TEXTURE_2D)
-		glPopMatrix()	
+
+		glPopClientAttrib()  # undo GL_VERTEX_ARRAY and TEXTURE_COORD_ARRAY changes
+		glPopAttrib()  # restores TEXTURE_2D
 	
 	def update(self):
 		"""
