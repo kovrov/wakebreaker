@@ -86,7 +86,7 @@ class Renderer:
 				 0.0, 1.0)
 		tex_coord_data_gl = (GLfloat * len(tex_coord_data))(*tex_coord_data)
 		glTexCoordPointer(2, GL_FLOAT, 0, tex_coord_data_gl)  # Set the vertex (position) data source
-		indices_gl = (c_ubyte * 6)(0, 1, 2, 5, 4, 3)
+		indices_gl = (ctypes.c_ubyte * 6)(0, 1, 2, 5, 4, 3)
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices_gl)  # Draw the triangle
 		glPopMatrix()
 
